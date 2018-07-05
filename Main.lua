@@ -328,6 +328,7 @@ function BetterThanBis:GearsetFrame(frame)
 
 end
 
+-- Create the add gearset popup frame
 function BetterThanBis:AddGearsetPopup(frame)
 
     frame.AddGearsetPopup = CreateFrame("Frame", "AddGearsetPopup", frame);
