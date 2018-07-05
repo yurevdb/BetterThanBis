@@ -7,6 +7,5 @@
 ## SavedVariables: BTBDB
 ## X-embeds: Ace3
 
-BFA/BFA.xml
-Libs/Libs.xml
+embeds.xml
 Main.lua
