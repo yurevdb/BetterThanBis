@@ -1,3 +1,5 @@
+-- Made by Yuré Vandebruggen (Scarllét-kilrogg EU)
+
 local _, BetterThanBis = ...
 
 _G["BetterThanBis"] = BetterThanBis;
