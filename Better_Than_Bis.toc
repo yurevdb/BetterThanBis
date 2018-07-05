@@ -1,0 +1,13 @@
+## Interface: 80100
+## Title: Better Than Bis
+## Notes: Create and manage BIS gear sets
+## Author: Scarllet
+## Version: 0.1
+## OptionalDeps: LibStub, LibUIDropDownMenu, Ace3
+## SavedVariables: BTBDB
+## X-embeds: Ace3
+
+embeds.xml
+Main.lua
+
+BFA/load.xml
