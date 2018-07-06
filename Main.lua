@@ -272,20 +272,15 @@ function BetterThanBis:GearsetFrame(frame)
     frame.GearFrame:SetSize(250, frame:GetHeight());
     frame.GearFrame:ClearAllPoints();
     frame.GearFrame:SetPoint("LEFT", frame, "LEFT", 0, 0);
-    frame.GearFrame.background = frame.GearFrame:CreateTexture(nil, "BACKGROUND");
-    frame.GearFrame.background:SetAllPoints();
-    frame.GearFrame.background:SetDrawLayer("ARTWORK", 1);
-    frame.GearFrame.background:SetColorTexture(1, 0.8, 0.9, 1);
+    frame.GearFrame:SetBackdrop({bgFile = "Interface/FrameGeneral/UI-Background-Rock", 
+                                                      tile = false,});
+    frame.GearFrame:SetBackdropColor(1,1,1,1);
 
     -- Add the gearset selector dropdown frame
     frame.GearFrame.GearSetDropDownFrame = CreateFrame("Frame", "GearSetDropDownFrame", frame.GearFrame);
     frame.GearFrame.GearSetDropDownFrame:SetSize(frame.GearFrame:GetWidth(), 30);
     frame.GearFrame.GearSetDropDownFrame:ClearAllPoints();
     frame.GearFrame.GearSetDropDownFrame:SetPoint("TOP", frame.GearFrame, "TOP", 0, 0);
-    frame.GearFrame.GearSetDropDownFrame.background = frame.GearFrame.GearSetDropDownFrame:CreateTexture(nil, "BACKGROUND");
-    frame.GearFrame.GearSetDropDownFrame.background:SetAllPoints();
-    frame.GearFrame.GearSetDropDownFrame.background:SetDrawLayer("ARTWORK", 1);
-    frame.GearFrame.GearSetDropDownFrame.background:SetColorTexture(1, 1, 1, 1);
 
     -- Dropdown group to make acegui widgets work
     frame.GearFrame.GearSetDropDownFrame.group = AceGUI:Create("SimpleGroup");
@@ -337,24 +332,25 @@ function BetterThanBis:AddGearsetPopup(frame)
     frame.AddGearsetPopup:SetPoint("CENTER", frame, "CENTER", 0, 0);
     frame.AddGearsetPopup:SetFrameStrata("DIALOG");
     frame.AddGearsetPopup:Hide();
-    frame.AddGearsetPopup:SetBackdrop({bgFile = "Interface/Tooltips/UI-Tooltip-Background", 
+    frame.AddGearsetPopup:SetBackdrop({bgFile = "Interface/Buttons/WHITE8X8", 
                                        tile = false,
                                        edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
                                        insets = {left = 4, top = 4, right = 4, bottom = 4}});
-    frame.AddGearsetPopup:SetBackdropColor(1,1,1,1);
+    frame.AddGearsetPopup:SetBackdropColor(0,0,0,0.7)
 
     frame.AddGearsetPopup.group = AceGUI:Create("SimpleGroup");
     frame.AddGearsetPopup.group:SetWidth(frame.AddGearsetPopup:GetWidth()*0.8);
     frame.AddGearsetPopup.group:SetHeight(frame.AddGearsetPopup:GetHeight());
     frame.AddGearsetPopup.group:SetPoint("CENTER", frame.AddGearsetPopup, "CENTER", 0, 0);
     frame.AddGearsetPopup.group:SetLayout("Flow");
-    frame.AddGearsetPopup.group.frame:SetFrameStrata("DIALOG");
+    frame.AddGearsetPopup.group.frame:SetFrameStrata("FULLSCREEN");
     frame.AddGearsetPopup.group.frame:Hide();
 
     frame.AddGearsetPopup.group.editbox = AceGUI:Create("EditBox");
     frame.AddGearsetPopup.group.editbox:SetLabel("Gearset name");
     frame.AddGearsetPopup.group.editbox:DisableButton(true);
     frame.AddGearsetPopup.group.editbox:SetCallback("OnTextChanged", function()
+    frame.AddGearsetPopup.group.editBox:SetWidth(frame.AddGearsetPopup.group.frame:GetWidth());
         local hasText = string.len(frame.AddGearsetPopup.group.editbox:GetText()) == 0;
         frame.AddGearsetPopup.group.okayButton:SetDisabled(hasText)
     end)
@@ -404,10 +400,24 @@ function BetterThanBis:InfoFrame(frame)
     frame.InfoFrame:ClearAllPoints();
     frame.InfoFrame:SetPoint("RIGHT", frame, "RIGHT", 0, 0);
 
-    frame.InfoFrame.background = frame.InfoFrame:CreateTexture(nil, "BACKGROUND");
-    frame.InfoFrame.background:SetAllPoints();
-    frame.InfoFrame.background:SetDrawLayer("ARTWORK", 1);
-    frame.InfoFrame.background:SetColorTexture(0, 1, 0, 1);
+    frame.InfoFrame:SetBackdrop({bgFile = "Interface/AchievementFrame/UI-Achievement-Parchment-Horizontal", 
+                                                      tile = false,});
+    frame.InfoFrame:SetBackdropColor(1,1,1,1);
+
+    frame.InfoFrame.buttonGroup = AceGUI:Create("SimpleGroup");
+    frame.InfoFrame.buttonGroup:SetLayout("Flow");
+    frame.InfoFrame.buttonGroup:SetWidth(frame.InfoFrame:GetWidth());
+    frame.InfoFrame.buttonGroup:SetHeight(30);
+    frame.InfoFrame.buttonGroup.frame:ClearAllPoints();
+    frame.InfoFrame.buttonGroup.frame:SetPoint("TOP", frame.InfoFrame, "TOP", 0, 0);
+    frame.InfoFrame.buttonGroup.frame:Hide();
+
+    local buttonWidth = 150;
+
+    frame.InfoFrame.buttonGroup.ImportExport = AceGUI:Create("Button");
+    frame.InfoFrame.buttonGroup.ImportExport:SetText("Import/Export");
+    frame.InfoFrame.buttonGroup.ImportExport:SetWidth(buttonWidth);
+    frame.InfoFrame.buttonGroup:AddChild(frame.InfoFrame.buttonGroup.ImportExport)
 
 end
 
@@ -447,9 +457,11 @@ function BetterThanBis:ToggleVisible()
         BetterThanBis.AddonWindow.MainFrame.GearFrame.GearSetDropDownFrame.group.frame:Hide();
         BetterThanBis.AddonWindow.AddGearsetPopup:Hide();
         BetterThanBis.AddonWindow.AddGearsetPopup.group.frame:Hide();
+        BetterThanBis.AddonWindow.MainFrame.InfoFrame.buttonGroup.frame:Hide();
     else
         BetterThanBis.AddonWindow:Show();
         BetterThanBis.AddonWindow.MainFrame.GearFrame.GearSetDropDownFrame.group.frame:Show();
+        BetterThanBis.AddonWindow.MainFrame.InfoFrame.buttonGroup.frame:Show();
         if not BetterThanBis.db.optionspanel.hide then
             BetterThanBis.AddonWindow.SidePanel.WidgetGroup.frame:Show();
         end
