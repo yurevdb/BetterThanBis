@@ -136,11 +136,9 @@ function BetterThanBis:TopPanel(frame)
     frame.TopPanel.ShowOptionsPanel:SetScript("OnClick", function()
         if BetterThanBis.db.optionspanel.hide then
             frame.SidePanel:Show();
-            frame.SidePanel.WidgetGroup.frame:Show();
             BetterThanBis.db.optionspanel.hide = false;
         else
             frame.SidePanel:Hide();
-            frame.SidePanel.WidgetGroup.frame:Hide()
             BetterThanBis.db.optionspanel.hide = true;
         end
     end);
@@ -174,21 +172,23 @@ function BetterThanBis:OptionsPanel(frame)
     frame.SidePanel.Heading.text:ClearAllPoints();
     frame.SidePanel.Heading.text:SetPoint("CENTER", frame.SidePanel.Heading, "CENTER", 0, 0);
 
-    -- AceGui group
-    frame.SidePanel.WidgetGroup = AceGUI:Create("SimpleGroup");
-    frame.SidePanel.WidgetGroup:SetWidth(frame.SidePanel:GetWidth()-6);
-    frame.SidePanel.WidgetGroup:SetHeight(frame.SidePanel:GetHeight());
-    frame.SidePanel.WidgetGroup:SetPoint("TOPRIGHT", frame.SidePanel, "TOPRIGHT", 3, -25);
-    frame.SidePanel.WidgetGroup:SetLayout("Flow");
-    frame.SidePanel.WidgetGroup.frame:SetFrameStrata("HIGH");
-    frame.SidePanel.WidgetGroup.frame:Hide()
+    -- The actual addon options
+    frame.SidePanel.Options = CreateFrame("Frame", "OptionsPanel", frame.SidePanel);
+    frame.SidePanel.Options:SetSize(frame.SidePanel:GetWidth(), sizeY-frame.SidePanel.Heading:GetHeight())
+    frame.SidePanel.Options:ClearAllPoints();
+    frame.SidePanel.Options:SetPoint("TOPRIGHT", frame.SidePanel, "TOPRIGHT", 0, -25);
 
-    frame.SidePanel.WidgetGroup.ShowMinimapIcon = AceGUI:Create("CheckBox");
-    frame.SidePanel.WidgetGroup.ShowMinimapIcon:SetLabel("Show minimap icon");
-    if not BetterThanBis.db.minimap.hide then
-        frame.SidePanel.WidgetGroup.ShowMinimapIcon:ToggleChecked();
-    end
-    frame.SidePanel.WidgetGroup.ShowMinimapIcon:SetCallback("OnValueChanged", function()
+    frame.SidePanel.Options.ShowMinimapIcon = CreateFrame("CheckButton", "ShowMinimapCheckButton", frame.SidePanel.Options, "ChatConfigCheckButtonTemplate");
+    frame.SidePanel.Options.ShowMinimapIcon:ClearAllPoints();
+    frame.SidePanel.Options.ShowMinimapIcon:SetPoint("TOPLEFT", frame.SidePanel.Options, "TOPLEFT", 6, -3);
+    frame.SidePanel.Options.ShowMinimapIcon:SetText("Show minimap icon");
+    frame.SidePanel.Options.ShowMinimapIcon:SetChecked(not BetterThanBis.db.minimap.hide);
+    frame.SidePanel.Options.ShowMinimapIcon.text = frame.SidePanel.Options.ShowMinimapIcon:CreateFontString();
+    frame.SidePanel.Options.ShowMinimapIcon.text:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE");
+    frame.SidePanel.Options.ShowMinimapIcon.text:SetText("Show minimap");
+    frame.SidePanel.Options.ShowMinimapIcon.text:ClearAllPoints();
+    frame.SidePanel.Options.ShowMinimapIcon.text:SetPoint("LEFT", frame.SidePanel.Options.ShowMinimapIcon, "RIGHT", 0, 0);
+    frame.SidePanel.Options.ShowMinimapIcon:SetScript("OnClick", function()
         if BetterThanBis.db.minimap.hide then
             icon:Show("BetterThanBis")
             BetterThanBis.db.minimap.hide = false;
@@ -197,14 +197,19 @@ function BetterThanBis:OptionsPanel(frame)
             BetterThanBis.db.minimap.hide = true;
         end
     end)
-    frame.SidePanel.WidgetGroup:AddChild(frame.SidePanel.WidgetGroup.ShowMinimapIcon);
+    frame.SidePanel.Options.ShowMinimapIcon:Show();
 
-    frame.SidePanel.WidgetGroup.ShowPlayerModel = AceGUI:Create("CheckBox");
-    frame.SidePanel.WidgetGroup.ShowPlayerModel:SetLabel("Show player model");
-    if not BetterThanBis.db.playermodel.hide then
-        frame.SidePanel.WidgetGroup.ShowPlayerModel:ToggleChecked();
-    end
-    frame.SidePanel.WidgetGroup.ShowPlayerModel:SetCallback("OnValueChanged", function()
+    frame.SidePanel.Options.ShowPlayerModel = CreateFrame("CheckButton", "ShowPlayerModelCheckButton", frame.SidePanel.Options, "ChatConfigCheckButtonTemplate");
+    frame.SidePanel.Options.ShowPlayerModel:ClearAllPoints();
+    frame.SidePanel.Options.ShowPlayerModel:SetPoint("TOP", frame.SidePanel.Options.ShowMinimapIcon, "BOTTOM", 0, -3);
+    frame.SidePanel.Options.ShowPlayerModel:SetText("Show player model");
+    frame.SidePanel.Options.ShowPlayerModel:SetChecked(not BetterThanBis.db.playermodel.hide);
+    frame.SidePanel.Options.ShowPlayerModel.text = frame.SidePanel.Options.ShowPlayerModel:CreateFontString();
+    frame.SidePanel.Options.ShowPlayerModel.text:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE");
+    frame.SidePanel.Options.ShowPlayerModel.text:SetText("Show player model");
+    frame.SidePanel.Options.ShowPlayerModel.text:ClearAllPoints();
+    frame.SidePanel.Options.ShowPlayerModel.text:SetPoint("LEFT", frame.SidePanel.Options.ShowPlayerModel, "RIGHT", 0, 0);
+    frame.SidePanel.Options.ShowPlayerModel:SetScript("OnClick", function()
         if BetterThanBis.db.playermodel.hide then
             frame.PlayerModel:Show()
             BetterThanBis.db.playermodel.hide = false;
@@ -213,7 +218,6 @@ function BetterThanBis:OptionsPanel(frame)
             BetterThanBis.db.playermodel.hide = true;
         end
     end)
-    frame.SidePanel.WidgetGroup:AddChild(frame.SidePanel.WidgetGroup.ShowPlayerModel);
 
     if BetterThanBis.db.optionspanel.hide then
         frame.SidePanel:Hide();
@@ -294,6 +298,7 @@ function BetterThanBis:GearsetFrame(frame)
     -- Create the dropdown
     frame.GearFrame.GearSetDropDownFrame.group.dropdown = AceGUI:Create("Dropdown");
     frame.GearFrame.GearSetDropDownFrame.group.dropdown:SetText("Select Gearset");
+    frame.GearFrame.GearSetDropDownFrame.group.dropdown.frame.background = nil;
     frame.GearFrame.GearSetDropDownFrame.group:AddChild(frame.GearFrame.GearSetDropDownFrame.group.dropdown);
     prevKey = "";
     frame.GearFrame.GearSetDropDownFrame.group.dropdown:SetCallback("OnValueChanged", function(key)
@@ -304,8 +309,6 @@ function BetterThanBis:GearsetFrame(frame)
                 frame.GearFrame.GearSetDropDownFrame.group.dropdown:SetValue("1");
             end
             BetterThanBis.AddonWindow.AddGearsetPopup:Show();
-            BetterThanBis.AddonWindow.AddGearsetPopup.group.frame:Show();
-            BetterThanBis.AddonWindow.AddGearsetPopup.group.editbox:SetFocus();
         else
             prevKey = tostring(key.value)
             -- Select the gearset duh!
@@ -337,33 +340,37 @@ function BetterThanBis:AddGearsetPopup(frame)
                                        edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
                                        insets = {left = 4, top = 4, right = 4, bottom = 4}});
     frame.AddGearsetPopup:SetBackdropColor(0,0,0,0.7)
+    
+    frame.AddGearsetPopup.Title = frame.AddGearsetPopup:CreateFontString();
+    frame.AddGearsetPopup.Title:SetFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE");
+    frame.AddGearsetPopup.Title:SetText("Gearset Name:");
+    frame.AddGearsetPopup.Title:ClearAllPoints();
+    frame.AddGearsetPopup.Title:SetPoint("TOP", frame.AddGearsetPopup, "TOP", 0, -25);
+    
 
-    frame.AddGearsetPopup.group = AceGUI:Create("SimpleGroup");
-    frame.AddGearsetPopup.group:SetWidth(frame.AddGearsetPopup:GetWidth()*0.8);
-    frame.AddGearsetPopup.group:SetHeight(frame.AddGearsetPopup:GetHeight());
-    frame.AddGearsetPopup.group:SetPoint("CENTER", frame.AddGearsetPopup, "CENTER", 0, 0);
-    frame.AddGearsetPopup.group:SetLayout("Flow");
-    frame.AddGearsetPopup.group.frame:SetFrameStrata("FULLSCREEN");
-    frame.AddGearsetPopup.group.frame:Hide();
+    frame.AddGearsetPopup.editbox = CreateFrame("EditBox", "GearsetNameEditbox", frame.AddGearsetPopup, "InputBoxTemplate");
+    frame.AddGearsetPopup.editbox:ClearAllPoints();
+    frame.AddGearsetPopup.editbox:SetPoint("BOTTOM", frame.AddGearsetPopup, "CENTER", 0, -8)
+    frame.AddGearsetPopup.editbox:SetWidth(frame.AddGearsetPopup:GetWidth()*0.7);
+    frame.AddGearsetPopup.editbox:SetHeight(25)
+    frame.AddGearsetPopup.editbox:SetScript("OnTextChanged", function()
+        if string.len(frame.AddGearsetPopup.editbox:GetText()) > 0 then
+            frame.AddGearsetPopup.okayButton:Enable();
+        else
+            frame.AddGearsetPopup.okayButton:Disable();
+        end
+    end);
 
-    frame.AddGearsetPopup.group.editbox = AceGUI:Create("EditBox");
-    frame.AddGearsetPopup.group.editbox:SetLabel("Gearset name");
-    frame.AddGearsetPopup.group.editbox:DisableButton(true);
-    frame.AddGearsetPopup.group.editbox:SetCallback("OnTextChanged", function()
-    frame.AddGearsetPopup.group.editBox:SetWidth(frame.AddGearsetPopup.group.frame:GetWidth());
-        local hasText = string.len(frame.AddGearsetPopup.group.editbox:GetText()) == 0;
-        frame.AddGearsetPopup.group.okayButton:SetDisabled(hasText)
-    end)
-    frame.AddGearsetPopup.group:AddChild(frame.AddGearsetPopup.group.editbox)
-
-    frame.AddGearsetPopup.group.okayButton = AceGUI:Create("Button");
-    frame.AddGearsetPopup.group.okayButton:SetText("Okay");
-    frame.AddGearsetPopup.group.okayButton:SetDisabled(true)
-    frame.AddGearsetPopup.group.okayButton:SetWidth(frame.AddGearsetPopup.group.frame:GetWidth()*0.5);
-    frame.AddGearsetPopup.group.okayButton:SetCallback("OnClick", function() 
+    frame.AddGearsetPopup.okayButton = CreateFrame("Button", "AddgearsetOkayButton", frame.AddGearsetPopup, "UIPanelButtonTemplate");
+    frame.AddGearsetPopup.okayButton:ClearAllPoints();
+    frame.AddGearsetPopup.okayButton:SetPoint("TOPRIGHT", frame.AddGearsetPopup, "CENTER", 0, -10);
+    frame.AddGearsetPopup.okayButton:SetText("Okay");
+    frame.AddGearsetPopup.okayButton:Disable()
+    frame.AddGearsetPopup.okayButton:SetWidth(frame.AddGearsetPopup:GetWidth()*0.4);
+    frame.AddGearsetPopup.okayButton:SetScript("OnClick", function() 
 
         -- Save the gearset to the database
-        local gearsetName = frame.AddGearsetPopup.group.editbox:GetText();
+        local gearsetName = frame.AddGearsetPopup.editbox:GetText();
         -- TODO: make a function that generates a gearset object to save
         -- Adds the item to the database
         BetterThanBis.char.gearsets[gearsetName] = {};
@@ -373,23 +380,21 @@ function BetterThanBis:AddGearsetPopup(frame)
         BetterThanBis.AddonWindow.MainFrame.GearFrame.GearSetDropDownFrame.group.dropdown:SetValue(#BetterThanBis.char.gearsets+1)
 
         frame.AddGearsetPopup:Hide();
-        frame.AddGearsetPopup.group.frame:Hide();
     end)
-    frame.AddGearsetPopup.group:AddChild(frame.AddGearsetPopup.group.okayButton)
 
-    frame.AddGearsetPopup.group.cancelButton = AceGUI:Create("Button");
-    frame.AddGearsetPopup.group.cancelButton:SetText("Cancel");
-    frame.AddGearsetPopup.group.cancelButton:SetWidth(frame.AddGearsetPopup.group.frame:GetWidth()*0.5)
-    frame.AddGearsetPopup.group.cancelButton:SetCallback("OnClick", function()
+    frame.AddGearsetPopup.cancelButton = CreateFrame("Button", "AddgearsetCancelButton", frame.AddGearsetPopup, "UIPanelButtonTemplate");
+    frame.AddGearsetPopup.cancelButton:ClearAllPoints();
+    frame.AddGearsetPopup.cancelButton:SetPoint("TOPLEFT", frame.AddGearsetPopup, "CENTER", 0, -10)
+    frame.AddGearsetPopup.cancelButton:SetText("Cancel");
+    frame.AddGearsetPopup.cancelButton:SetWidth(frame.AddGearsetPopup:GetWidth()*0.4)
+    frame.AddGearsetPopup.cancelButton:SetScript("OnClick", function()
         if prevKey ~= "" then
             BetterThanBis.AddonWindow.MainFrame.GearFrame.GearSetDropDownFrame.group.dropdown:SetValue(prevKey)
         else
             BetterThanBis.AddonWindow.MainFrame.GearFrame.GearSetDropDownFrame.group.dropdown:SetValue("1")
         end
         frame.AddGearsetPopup:Hide();
-        frame.AddGearsetPopup.group.frame:Hide();
     end)
-    frame.AddGearsetPopup.group:AddChild(frame.AddGearsetPopup.group.cancelButton)
 
 end
 
@@ -403,21 +408,6 @@ function BetterThanBis:InfoFrame(frame)
     frame.InfoFrame:SetBackdrop({bgFile = "Interface/AchievementFrame/UI-Achievement-Parchment-Horizontal", 
                                                       tile = false,});
     frame.InfoFrame:SetBackdropColor(1,1,1,1);
-
-    frame.InfoFrame.buttonGroup = AceGUI:Create("SimpleGroup");
-    frame.InfoFrame.buttonGroup:SetLayout("Flow");
-    frame.InfoFrame.buttonGroup:SetWidth(frame.InfoFrame:GetWidth());
-    frame.InfoFrame.buttonGroup:SetHeight(30);
-    frame.InfoFrame.buttonGroup.frame:ClearAllPoints();
-    frame.InfoFrame.buttonGroup.frame:SetPoint("TOP", frame.InfoFrame, "TOP", 0, 0);
-    frame.InfoFrame.buttonGroup.frame:Hide();
-
-    local buttonWidth = 150;
-
-    frame.InfoFrame.buttonGroup.ImportExport = AceGUI:Create("Button");
-    frame.InfoFrame.buttonGroup.ImportExport:SetText("Import/Export");
-    frame.InfoFrame.buttonGroup.ImportExport:SetWidth(buttonWidth);
-    frame.InfoFrame.buttonGroup:AddChild(frame.InfoFrame.buttonGroup.ImportExport)
 
 end
 
@@ -453,17 +443,13 @@ end
 function BetterThanBis:ToggleVisible() 
     if BetterThanBis.AddonWindow:IsShown() then
         BetterThanBis.AddonWindow:Hide();
-        BetterThanBis.AddonWindow.SidePanel.WidgetGroup.frame:Hide();
         BetterThanBis.AddonWindow.MainFrame.GearFrame.GearSetDropDownFrame.group.frame:Hide();
         BetterThanBis.AddonWindow.AddGearsetPopup:Hide();
-        BetterThanBis.AddonWindow.AddGearsetPopup.group.frame:Hide();
-        BetterThanBis.AddonWindow.MainFrame.InfoFrame.buttonGroup.frame:Hide();
     else
         BetterThanBis.AddonWindow:Show();
         BetterThanBis.AddonWindow.MainFrame.GearFrame.GearSetDropDownFrame.group.frame:Show();
-        BetterThanBis.AddonWindow.MainFrame.InfoFrame.buttonGroup.frame:Show();
         if not BetterThanBis.db.optionspanel.hide then
-            BetterThanBis.AddonWindow.SidePanel.WidgetGroup.frame:Show();
+            BetterThanBis.AddonWindow.SidePanel:Show();
         end
     end
 end
