@@ -40,6 +40,8 @@ local LDB = LibStub("LibDataBroker-1.1"):NewDataObject("BetterThanBis", {
 local sizeX = 800;
 local sizeY = 500;
 
+local selectedGearset;
+
 --Think about the table
 local Defaults = {
     global = {
@@ -152,14 +154,10 @@ function BetterThanBis:OptionsPanel(frame)
     frame.SidePanel:SetPoint("LEFT", frame, "RIGHT", 0, 0);
     frame.SidePanel:SetWidth(200);
     frame.SidePanel:SetHeight(sizeY);
-    --frame.SidePanel.background = frame.SidePanel:CreateTexture(nil, "BACKGROUND");
-	--frame.SidePanel.background:SetAllPoints();
-	--frame.SidePanel.background:SetDrawLayer("ARTWORK", -5);
-	--frame.SidePanel.background:SetColorTexture(0.2, 0.2, 0.2, 1);
-    --frame.SidePanel.background:SetAlpha(1);
-    frame.SidePanel:SetBackdrop({bgFile = "Interface/AchievementFrame/UI-GuildAchievement-Parchment-Horizontal", 
-                                 tile = false,});
-    frame.SidePanel:SetBackdropColor(1,1,1,1);
+    frame.SidePanel.background = frame.SidePanel:CreateTexture(nil, "BACKGROUND");
+	frame.SidePanel.background:SetAllPoints();
+	frame.SidePanel.background:SetDrawLayer("ARTWORK", 1);
+	frame.SidePanel.background:SetColorTexture(0.2, 0.2, 0.2, 1);
 
     -- Options panel Title
     frame.SidePanel.Heading = CreateFrame("Frame", "OptionsPanelHeading", frame.SidePanel);
@@ -294,28 +292,51 @@ function BetterThanBis:GearsetFrame(frame)
     UIDropDownMenu_SetAnchor(dd, 0, 5, "TOP", dd, "BOTTOM");
 
     -- Initialize the dropdown
+    BetterThanBis:SetupGearDropdown(dd);
+end
+
+function BetterThanBis:SetupGearDropdown(dd)
+
     UIDropDownMenu_Initialize(dd, function(self, level, menuList)
     
-        local info = UIDropDownMenu_CreateInfo();
-        info.text = "Hello World";
-        info.icon = "Interface\\Icons\\INV_Drink_05";
-        info.tCoordLeft = 1;
-        info.tCoordTop = 0;
-        info.tCoordRight = 0;
-        info.tCoordBottom = 1;
-        info.minWidth = frame.GearFrame:GetWidth()*0.6;
-        info.justifyH = "LEFT"
-        info.checked = true;
-        info.isNotRadio = true;
-        info.owner = dd;
-        UIDropDownMenu_AddButton(info)
+        -- Sort the gearset table first for consistent display
 
-        local second = UIDropDownMenu_CreateInfo();
-        second.text = "Bis Set";
-        second.isNotRadio = true;
-        second.owner = dd;
-        UIDropDownMenu_AddButton(second);
-    end)
+        for key,value in pairs(BetterThanBis.char.gearsets) do
+
+            local info = UIDropDownMenu_CreateInfo();
+            if string.len(tostring(key)) > 35 then
+                info.text = tostring(key):sub(1, 35).."...";
+            else
+                info.text = key;
+            end
+            info.icon = value.icon;
+            info.tCoordLeft = 1;
+            info.tCoordTop = 0;
+            info.tCoordRight = 0;
+            info.tCoordBottom = 1;
+            info.minWidth = dd:GetWidth()*0.8;
+            info.justifyH = "LEFT"
+            info.notCheckable = true;
+            info.isNotRadio = true;
+            info.arg1 = key;
+            info.func = function(value)
+                selectedGearset = BetterThanBis.char.gearsets[value.arg1];
+                UIDropDownMenu_SetText(dd, value.arg1);
+            end
+            UIDropDownMenu_AddButton(info);
+
+        end
+
+        local addGearsetButton = UIDropDownMenu_CreateInfo();
+        addGearsetButton.text = "|cff00ff00<Add New Gearset>";
+        addGearsetButton.justifyH = "CENTER";
+        addGearsetButton.notCheckable = true;
+        addGearsetButton.isNotRadio = true;
+        addGearsetButton.func = function()
+            BetterThanBis.AddonWindow.AddGearsetPopup:Show();
+        end
+        UIDropDownMenu_AddButton(addGearsetButton);
+    end);
 
 end
 
@@ -369,8 +390,7 @@ function BetterThanBis:AddGearsetPopup(frame)
         BetterThanBis.char.gearsets[gearsetName] = {};
 
         -- Adds the item to show in the dropdown
-        BetterThanBis.AddonWindow.MainFrame.GearFrame.GearSetDropDownFrame.group.dropdown:AddItem(#BetterThanBis.char.gearsets+1, gearsetName);
-        BetterThanBis.AddonWindow.MainFrame.GearFrame.GearSetDropDownFrame.group.dropdown:SetValue(#BetterThanBis.char.gearsets+1)
+        BetterThanBis:SetupGearDropdown(frame.MainFrame.GearFrame.GearSetDropDownFrame);
 
         frame.AddGearsetPopup:Hide();
     end)
@@ -381,11 +401,6 @@ function BetterThanBis:AddGearsetPopup(frame)
     frame.AddGearsetPopup.cancelButton:SetText("Cancel");
     frame.AddGearsetPopup.cancelButton:SetWidth(frame.AddGearsetPopup:GetWidth()*0.4)
     frame.AddGearsetPopup.cancelButton:SetScript("OnClick", function()
-        if prevKey ~= "" then
-            BetterThanBis.AddonWindow.MainFrame.GearFrame.GearSetDropDownFrame.group.dropdown:SetValue(prevKey)
-        else
-            BetterThanBis.AddonWindow.MainFrame.GearFrame.GearSetDropDownFrame.group.dropdown:SetValue("1")
-        end
         frame.AddGearsetPopup:Hide();
     end)
 
