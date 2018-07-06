@@ -281,48 +281,41 @@ function BetterThanBis:GearsetFrame(frame)
     frame.GearFrame:SetBackdropColor(1,1,1,1);
 
     -- Add the gearset selector dropdown frame
-    frame.GearFrame.GearSetDropDownFrame = CreateFrame("Frame", "GearSetDropDownFrame", frame.GearFrame);
-    frame.GearFrame.GearSetDropDownFrame:SetSize(frame.GearFrame:GetWidth(), 30);
-    frame.GearFrame.GearSetDropDownFrame:ClearAllPoints();
+    frame.GearFrame.GearSetDropDownFrame = CreateFrame("Frame", "GearSetDropDownFrame", frame.GearFrame, "UIDropDownMenuTemplate");
     frame.GearFrame.GearSetDropDownFrame:SetPoint("TOP", frame.GearFrame, "TOP", 0, 0);
 
-    -- Dropdown group to make acegui widgets work
-    frame.GearFrame.GearSetDropDownFrame.group = AceGUI:Create("SimpleGroup");
-    frame.GearFrame.GearSetDropDownFrame.group:SetWidth(frame.GearFrame.GearSetDropDownFrame:GetWidth()*0.8);
-    frame.GearFrame.GearSetDropDownFrame.group:SetHeight(frame.GearFrame.GearSetDropDownFrame:GetHeight());
-    frame.GearFrame.GearSetDropDownFrame.group:SetPoint("CENTER", frame.GearFrame.GearSetDropDownFrame, "CENTER", 0, 0);
-    frame.GearFrame.GearSetDropDownFrame.group:SetLayout("Fill");
-    frame.GearFrame.GearSetDropDownFrame.group.frame:SetFrameStrata("DIALOG");
-    frame.GearFrame.GearSetDropDownFrame.group.frame:Hide()
+    -- local pointer to the dropdown with much shorter name (easier to handle)
+    local dd = frame.GearFrame.GearSetDropDownFrame;
 
-    -- Create the dropdown
-    frame.GearFrame.GearSetDropDownFrame.group.dropdown = AceGUI:Create("Dropdown");
-    frame.GearFrame.GearSetDropDownFrame.group.dropdown:SetText("Select Gearset");
-    frame.GearFrame.GearSetDropDownFrame.group.dropdown.frame.background = nil;
-    frame.GearFrame.GearSetDropDownFrame.group:AddChild(frame.GearFrame.GearSetDropDownFrame.group.dropdown);
-    prevKey = "";
-    frame.GearFrame.GearSetDropDownFrame.group.dropdown:SetCallback("OnValueChanged", function(key)
-        if tostring(key.value) == "Add" then
-            if prevKey ~= "" then
-                frame.GearFrame.GearSetDropDownFrame.group.dropdown:SetValue(prevKey);
-            else
-                frame.GearFrame.GearSetDropDownFrame.group.dropdown:SetValue("1");
-            end
-            BetterThanBis.AddonWindow.AddGearsetPopup:Show();
-        else
-            prevKey = tostring(key.value)
-            -- Select the gearset duh!
-        end
+    -- Standard blizzard dropdown (hope this works)
+    UIDropDownMenu_SetWidth(dd, frame.GearFrame:GetWidth()*0.6);
+    UIDropDownMenu_SetText(dd, "Select Gearset");
+    UIDropDownMenu_JustifyText(dd, "LEFT");
+    UIDropDownMenu_SetAnchor(dd, 0, 5, "TOP", dd, "BOTTOM");
+
+    -- Initialize the dropdown
+    UIDropDownMenu_Initialize(dd, function(self, level, menuList)
+    
+        local info = UIDropDownMenu_CreateInfo();
+        info.text = "Hello World";
+        info.icon = "Interface\\Icons\\INV_Drink_05";
+        info.tCoordLeft = 1;
+        info.tCoordTop = 0;
+        info.tCoordRight = 0;
+        info.tCoordBottom = 1;
+        info.minWidth = frame.GearFrame:GetWidth()*0.6;
+        info.justifyH = "LEFT"
+        info.checked = true;
+        info.isNotRadio = true;
+        info.owner = dd;
+        UIDropDownMenu_AddButton(info)
+
+        local second = UIDropDownMenu_CreateInfo();
+        second.text = "Bis Set";
+        second.isNotRadio = true;
+        second.owner = dd;
+        UIDropDownMenu_AddButton(second);
     end)
-
-    local gearsetList = {};
-    local count = 1;
-    for i,_ in pairs(BetterThanBis.char.gearsets) do
-        gearsetList[tostring(count)] = tostring(i);
-        count = count + 1;
-    end
-    gearsetList["Add"] = "Add Gearset";
-    frame.GearFrame.GearSetDropDownFrame.group.dropdown:SetList(gearsetList);
 
 end
 
@@ -443,11 +436,9 @@ end
 function BetterThanBis:ToggleVisible() 
     if BetterThanBis.AddonWindow:IsShown() then
         BetterThanBis.AddonWindow:Hide();
-        BetterThanBis.AddonWindow.MainFrame.GearFrame.GearSetDropDownFrame.group.frame:Hide();
         BetterThanBis.AddonWindow.AddGearsetPopup:Hide();
     else
         BetterThanBis.AddonWindow:Show();
-        BetterThanBis.AddonWindow.MainFrame.GearFrame.GearSetDropDownFrame.group.frame:Show();
         if not BetterThanBis.db.optionspanel.hide then
             BetterThanBis.AddonWindow.SidePanel:Show();
         end
