@@ -2,6 +2,7 @@
 
 local _, BetterThanBis = ...
 
+BetterThanBis.Items = {};
 _G["BetterThanBis"] = BetterThanBis;
 
 -- Ace Framework stuffies
@@ -11,7 +12,7 @@ local icon = LibStub("LibDBIcon-1.0");
 local LDB = LibStub("LibDataBroker-1.1"):NewDataObject("BetterThanBis", {
 	type = "data source",
 	text = "Btter Than Bis",
-	icon = "Interface\\Icons\\INV_Drink_05",
+	icon = "Interface\\Icons\\achievement_boss_golden_lotus_council",
     OnClick = function(button,buttonPressed)
         if buttonPressed == "RightButton" then
 			if BetterThanBis.db.minimap.lock then
@@ -254,10 +255,11 @@ function BetterThanBis:PlayerModel(frame)
     frame.PlayerModel.BGBottom:SetTexture("Interface\\DressUpFrame\\DressUpBackground-"..race.."3");
 
     -- The Player Model
-    frame.PlayerModel.Model = CreateFrame("DressUpModel", "PLayerCharacterModel", frame.PlayerModel);
+    frame.PlayerModel.Model = CreateFrame("DressUpModel", "PLayerCharacterModel", frame.PlayerModel, "ModelWithControlsTemplate");
     frame.PlayerModel.Model:SetAllPoints();
     frame.PlayerModel.Model:SetUnit("Player");
-    frame.PlayerModel.Model:SetPosition(0.35,0.05,0);
+    frame.PlayerModel.Model:SetPosition(0,0,0);
+    frame.PlayerModel.Model:TryOn(160679);
 
     if BetterThanBis.db.playermodel.hide then
         frame.PlayerModel:Hide();
@@ -317,19 +319,32 @@ function BetterThanBis:GearsetFrame(frame)
     local f = frame.GearFrame;
 
     -- Head Frame
-    f.head = CreateFrame("Button", "HeadFrame", f); --UIPanelLargeSilverButton
+    f.head = CreateFrame("Button", "HeadFrame", f, "ItemButtonTemplate"); --UIPanelLargeSilverButton
     f.head:ClearAllPoints();
     f.head:SetPoint("TOPLEFT", f, "TOPLEFT", 5, -30);
     f.head:SetSize(45, 45);
     f.head.background = f.head:CreateTexture(nil, "BACKGROUND");
-    f.head.background:SetAllPoints();
-    f.head.background:SetTexture("Interface\\Icons\\inv_misc_desecrated_platehelm");
-    f.head.background:SetDesaturated(1)
+    f.head.background:ClearAllPoints();
+    f.head.background:SetPoint("CENTER", f.head, "CENTER", 0, 0);
+    f.head.background:SetSize(40, 40);
+    f.head.background:SetTexture("Interface\\Icons\\inv_helmet_24");
+    f.head.background:SetDesaturated(1);
+    f.head:SetScript("OnClick", function()
+        -- TODO: Infoframe.item["Head"]:Show();
+        BetterThanBis:ToggleItemSelectionFrame();
+    end);
 
-    f.head = CreateFrame("Frame", "TestFrame", f); --UIPanelLargeSilverButton
-    f.head:ClearAllPoints();
-    f.head:SetPoint("TOPLEFT", f, "TOPLEFT", 5, -80);
-    f.head:SetSize(45, 45);
+    f.neck = CreateFrame("Button", "NeckFrame", f, "ItemButtonTemplate"); --UIPanelLargeSilverButton
+    f.neck:ClearAllPoints();
+    f.neck:SetPoint("TOPLEFT", f, "TOPLEFT", 5, -80);
+    f.neck:SetSize(45, 45);
+    f.neck.background = f.neck:CreateTexture(nil, "BACKGROUND");
+    f.neck.background:ClearAllPoints();
+    f.neck.background:SetPoint("CENTER", f.neck, "CENTER", 0, 0)
+    f.neck.background:SetSize(38, 38)
+    f.neck.background:SetTexture("Interface\\Icons\\item_icecrownnecklaced");
+    f.neck.background:SetDesaturated(1);
+
 end
 
 function BetterThanBis:SetupGearDropdown(dd)
@@ -445,15 +460,56 @@ end
 
 function BetterThanBis:InfoFrame(frame)
 
-    frame.InfoFrame = CreateFrame("Frame", "GearSetFrame", frame);
+    frame.InfoFrame = CreateFrame("Frame", "InfoFrame", frame);
     frame.InfoFrame:SetSize(550, frame:GetHeight());
     frame.InfoFrame:ClearAllPoints();
     frame.InfoFrame:SetPoint("RIGHT", frame, "RIGHT", 0, 0);
 
     frame.InfoFrame:SetBackdrop({bgFile = "Interface/AchievementFrame/UI-Achievement-Parchment-Horizontal", 
-                                                      tile = false,});
+                                 tile = false,});
     frame.InfoFrame:SetBackdropColor(1,1,1,1);
 
+    BetterThanBis:CreateItemSelectionFrame(frame.InfoFrame);    
+
+end
+
+
+function BetterThanBis:CreateItemSelectionFrame(frame)
+
+    frame.ItemSelectionFrame = CreateFrame("Frame", "ItemSelectionFrame", frame);
+    frame.ItemSelectionFrame:ClearAllPoints();
+    frame.ItemSelectionFrame:SetSize(frame:GetWidth(), frame:GetHeight()-30);
+    frame.ItemSelectionFrame:SetPoint("TOP", frame, "TOP", 0, -30);
+    frame.ItemSelectionFrame:Hide();
+    frame.ItemSelectionFrame:SetScript("OnShow", function()
+        message("Items = "..tostring(_G["BetterThanBis"].Items))
+        local items = _G["BetterThanBis"].Items or {};
+        local f = frame.ItemSelectionFrame;
+
+        if #items <= 0 then
+            return;
+        end
+
+        f.ItemButton = CreateFrame("Button", "itemButton", f);
+        f.ItemButton:ClearAllPoints();
+        f.ItemButton:SetSize(40, 40);
+        f.ItemButton:SetPoint("TOPLEFT", f, "TOPLEFT", 10, 10);
+        local item = BetterThanBis.Items[1][1][2];
+        local name = GetItemInfo(item);
+        local icon = GetItemIcon(item);
+        f.ItemButton.bg = f.ItemButton:CreateTexture(nil, "BACKGROUND");
+        f.ItemButton.bg:SetAllPoints();
+        f.ItemButton.bg:SetTexture(icon);
+
+    end)
+end
+
+function BetterThanBis:ToggleItemSelectionFrame()
+    if BetterThanBis.AddonWindow.MainFrame.InfoFrame.ItemSelectionFrame:IsShown() then
+        BetterThanBis.AddonWindow.MainFrame.InfoFrame.ItemSelectionFrame:Hide();
+    else
+        BetterThanBis.AddonWindow.MainFrame.InfoFrame.ItemSelectionFrame:Show();
+    end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -474,7 +530,7 @@ function BetterThanBis:OnInitialize()
     -- Register for events
     self:RegisterEvents()
 
-    InitFrames()
+    InitFrames();
     icon:Register("BetterThanBis", LDB, self.db.minimap)
 end
 
@@ -504,8 +560,6 @@ function BetterThanBis:RegisterEvents()
 end
 
 function BetterThanBis:GetCharacterBaseStats()
-    -- Get the players name
-    local playerName = UnitName("player");
 
     -- Get Base Main Stats
     local strBase, strStat = UnitStat("player", 1);

@@ -2,10 +2,12 @@
 ## Title: Better Than Bis
 ## Notes: Create and manage BIS gear sets
 ## Author: Scarllet
-## Version: 0.1
+## Version: 0.3
 ## OptionalDeps: LibStub, LibUIDropDownMenu, Ace3, ElvUI
 ## SavedVariables: BTBDB
 ## X-embeds: Ace3
 
+
 embeds.xml
 Main.lua
+BFA\load.xml
