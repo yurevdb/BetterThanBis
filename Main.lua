@@ -144,6 +144,10 @@ function BetterThanBis:TopPanel(frame)
             BetterThanBis.db.optionspanel.hide = true;
         end
     end);
+
+    frame.TopPanel.InfoButton = CreateFrame("Button", "InfoButton", frame.TopPanel, "UIPanelInfoButton");
+    frame.TopPanel.InfoButton:ClearAllPoints();
+    frame.TopPanel.InfoButton:SetPoint("LEFT", frame.TopPanel, "LEFT", 5, 0);
 end
 
 function BetterThanBis:OptionsPanel(frame)
@@ -223,26 +227,37 @@ function BetterThanBis:OptionsPanel(frame)
 end
 
 function BetterThanBis:PlayerModel(frame)
+    local _, race = UnitRace("player")
+    local _,_,classIndex = UnitClass("player")
 
     frame.PlayerModel = CreateFrame("Frame", "PlayerCharacterModelFrame", frame);
     frame.PlayerModel:ClearAllPoints();
     frame.PlayerModel:SetPoint("RIGHT", frame, "LEFT", 0, 0);
     frame.PlayerModel:SetSize(250, sizeY);
-    frame.PlayerModel.Background = frame.PlayerModel:CreateTexture(nil, "BACKGROUND");
-    frame.PlayerModel.Background:SetAllPoints();
-    frame.PlayerModel.Background:SetDrawLayer("ARTWORK", 1);
-    frame.PlayerModel.Background:SetColorTexture(0, 0, 0, 1);
-    frame.PlayerModel.Background:SetAlpha(0.6);
+    frame.PlayerModel:EnableMouse(true);
+    frame.PlayerModel.background = frame.PlayerModel:CreateTexture(nil, "BACKGROUND");
+    -- Set the correct scaling for the model;
+    frame.PlayerModel.background:SetAtlas("dressingroom-background-"..classIndex);
+
+    -- Create the top background
+    frame.PlayerModel.BGTop = frame.PlayerModel:CreateTexture(nil, "BACKGROUND");
+    frame.PlayerModel.BGTop:SetSize(250, 400)
+    frame.PlayerModel.BGTop:SetPoint("TOPLEFT", frame.PlayerModel, "TOPLEFT", 0, 0);
+    frame.PlayerModel.BGTop:SetTexCoord(0, 0.61, 0, 1.0);
+    frame.PlayerModel.BGTop:SetTexture("Interface\\DressUpFrame\\DressUpBackground-"..race.."1");
+
+    -- Create the bottom background
+    frame.PlayerModel.BGBottom = frame.PlayerModel:CreateTexture(nil, "BACKGROUND");
+    frame.PlayerModel.BGBottom:SetSize(250, 100)
+    frame.PlayerModel.BGBottom:SetPoint("TOPLEFT", frame.PlayerModel.BGTop, "BOTTOMLEFT", 0, 0);
+    frame.PlayerModel.BGBottom:SetTexCoord(0, 0.61, 0, 0.588);
+    frame.PlayerModel.BGBottom:SetTexture("Interface\\DressUpFrame\\DressUpBackground-"..race.."3");
 
     -- The Player Model
     frame.PlayerModel.Model = CreateFrame("DressUpModel", "PLayerCharacterModel", frame.PlayerModel);
-    frame.PlayerModel.Model:ClearAllPoints();
-    frame.PlayerModel.Model:SetPoint("CENTER", frame.PlayerModel, "CENTER", 0, 0);
+    frame.PlayerModel.Model:SetAllPoints();
     frame.PlayerModel.Model:SetUnit("Player");
-    frame.PlayerModel.Model:SetPosition(-110,-0.1,-1.4); 
-    -- -110 is to zoom out so you see the entire model
-    -- -0.1 is to center the model horizontally
-    -- -1.4 is to lower the model vertically
+    frame.PlayerModel.Model:SetPosition(0.35,0.05,0);
 
     if BetterThanBis.db.playermodel.hide then
         frame.PlayerModel:Hide();
@@ -293,13 +308,35 @@ function BetterThanBis:GearsetFrame(frame)
 
     -- Initialize the dropdown
     BetterThanBis:SetupGearDropdown(dd);
+
+    --------------------------------------------------------
+    -- Adding the gear window ------------------------------
+    --------------------------------------------------------
+
+    -- pointer to the parent frame
+    local f = frame.GearFrame;
+
+    -- Head Frame
+    f.head = CreateFrame("Button", "HeadFrame", f); --UIPanelLargeSilverButton
+    f.head:ClearAllPoints();
+    f.head:SetPoint("TOPLEFT", f, "TOPLEFT", 5, -30);
+    f.head:SetSize(45, 45);
+    f.head.background = f.head:CreateTexture(nil, "BACKGROUND");
+    f.head.background:SetAllPoints();
+    f.head.background:SetTexture("Interface\\Icons\\inv_misc_desecrated_platehelm");
+    f.head.background:SetDesaturated(1)
+
+    f.head = CreateFrame("Frame", "TestFrame", f); --UIPanelLargeSilverButton
+    f.head:ClearAllPoints();
+    f.head:SetPoint("TOPLEFT", f, "TOPLEFT", 5, -80);
+    f.head:SetSize(45, 45);
 end
 
 function BetterThanBis:SetupGearDropdown(dd)
 
     UIDropDownMenu_Initialize(dd, function(self, level, menuList)
     
-        -- Sort the gearset table first for consistent display
+        --TODO: Sort the gearset table first for consistent display
 
         for key,value in pairs(BetterThanBis.char.gearsets) do
 
