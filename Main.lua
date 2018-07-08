@@ -41,7 +41,7 @@ local LDB = LibStub("LibDataBroker-1.1"):NewDataObject("BetterThanBis", {
 local sizeX = 800;
 local sizeY = 500;
 
-local selectedGearset;
+local SelectedItemSlot;
 
 --Think about the table
 local Defaults = {
@@ -330,13 +330,13 @@ function BetterThanBis:GearsetFrame(frame)
     f.head.background:SetTexture("Interface\\Icons\\inv_helmet_24");
     f.head.background:SetDesaturated(1);
     f.head:SetScript("OnClick", function()
-        -- TODO: Infoframe.item["Head"]:Show();
+        SelectedItemSlot = "INVTYPE_HEAD";
         BetterThanBis:ToggleItemSelectionFrame();
     end);
 
     f.neck = CreateFrame("Button", "NeckFrame", f, "ItemButtonTemplate"); --UIPanelLargeSilverButton
     f.neck:ClearAllPoints();
-    f.neck:SetPoint("TOPLEFT", f, "TOPLEFT", 5, -80);
+    f.neck:SetPoint("TOP", f.head, "BOTTOM", 0, -4);
     f.neck:SetSize(45, 45);
     f.neck.background = f.neck:CreateTexture(nil, "BACKGROUND");
     f.neck.background:ClearAllPoints();
@@ -345,6 +345,20 @@ function BetterThanBis:GearsetFrame(frame)
     f.neck.background:SetTexture("Interface\\Icons\\item_icecrownnecklaced");
     f.neck.background:SetDesaturated(1);
 
+    f.shoulder = CreateFrame("Button", "NeckFrame", f, "ItemButtonTemplate"); --UIPanelLargeSilverButton
+    f.shoulder:ClearAllPoints();
+    f.shoulder:SetPoint("TOP", f.neck, "BOTTOM", 0, -4);
+    f.shoulder:SetSize(45, 45);
+    f.shoulder.background = f.shoulder:CreateTexture(nil, "BACKGROUND");
+    f.shoulder.background:ClearAllPoints();
+    f.shoulder.background:SetPoint("CENTER", f.shoulder, "CENTER", 0, 0)
+    f.shoulder.background:SetSize(38, 38)
+    f.shoulder.background:SetTexture("Interface\\Icons\\inv_shoulder_22");
+    f.shoulder.background:SetDesaturated(1);
+    f.shoulder:SetScript("OnClick", function()
+        SelectedItemSlot = "INVTYPE_SHOULDER";
+        BetterThanBis:ToggleItemSelectionFrame();
+    end)
 end
 
 function BetterThanBis:SetupGearDropdown(dd)
@@ -481,26 +495,41 @@ function BetterThanBis:CreateItemSelectionFrame(frame)
     frame.ItemSelectionFrame:SetSize(frame:GetWidth(), frame:GetHeight()-30);
     frame.ItemSelectionFrame:SetPoint("TOP", frame, "TOP", 0, -30);
     frame.ItemSelectionFrame:Hide();
+    frame.ItemSelectionFrame.items = {};
+    frame.ItemSelectionFrame:SetScript("OnHide", function()
+        frame.ItemSelectionFrame.items = {};
+    end)
     frame.ItemSelectionFrame:SetScript("OnShow", function()
-        message("Items = "..tostring(_G["BetterThanBis"].Items))
-        local items = _G["BetterThanBis"].Items or {};
+        -- Get the item slot to query
+        local slot = SelectedItemSlot;
+        -- Reset the global variable
+        SelectedItemSlot = "";
+        -- Check to see if the slot exists, otherwise return
+        if not slot then return end
+
+        local items = _G["BetterThanBis"].Items ;
         local f = frame.ItemSelectionFrame;
 
-        if #items <= 0 then
-            return;
+        for raid=1,#items do
+            for boss=1,#items[raid] do
+                for i=1,#items[raid][boss]do
+                    local item = items[raid][boss][i];
+                    -- Get all the necessary data
+                    local name, link, rarity, level, minLevel, type, subType, stackCount, equipLocation, iconFileDataId, sellPrice, classId, subClassId, bindType, expacId, setId, isCraftingReagent = GetItemInfo(item);
+                    -- the the slot doesn't match, return
+                    if equipLocation == slot then 
+
+                        f.items[name] = CreateFrame("Button", name.."Button", f);
+                        f.items[name]:ClearAllPoints();
+                        f.items[name]:SetSize(40, 40);
+                        f.items[name]:SetPoint("TOPLEFT", f, "TOPLEFT", 10, 0);
+                        f.items[name].bg = f.items[name]:CreateTexture(nil, "BACKGROUND");
+                        f.items[name].bg:SetAllPoints();
+                        f.items[name].bg:SetTexture(iconFileDataId);
+                    end
+                end
+            end
         end
-
-        f.ItemButton = CreateFrame("Button", "itemButton", f);
-        f.ItemButton:ClearAllPoints();
-        f.ItemButton:SetSize(40, 40);
-        f.ItemButton:SetPoint("TOPLEFT", f, "TOPLEFT", 10, 10);
-        local item = BetterThanBis.Items[1][1][2];
-        local name = GetItemInfo(item);
-        local icon = GetItemIcon(item);
-        f.ItemButton.bg = f.ItemButton:CreateTexture(nil, "BACKGROUND");
-        f.ItemButton.bg:SetAllPoints();
-        f.ItemButton.bg:SetTexture(icon);
-
     end)
 end
 
@@ -541,7 +570,8 @@ function BetterThanBis:ChatCommand(input)
     end
 end
 
-function BetterThanBis:ToggleVisible() 
+function BetterThanBis:ToggleVisible()
+
     if BetterThanBis.AddonWindow:IsShown() then
         BetterThanBis.AddonWindow:Hide();
         BetterThanBis.AddonWindow.AddGearsetPopup:Hide();
