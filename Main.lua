@@ -43,6 +43,8 @@ local sizeY = 500;
 
 local SelectedItemSlot;
 
+local GearIcons = {};
+
 --Think about the table
 local Defaults = {
     global = {
@@ -50,9 +52,6 @@ local Defaults = {
             hide = false,
         },
         optionspanel = {
-            hide = true,
-        },
-        playermodel = {
             hide = true,
         },
     },
@@ -89,7 +88,6 @@ function InitFrames()
     
     BetterThanBis:TopPanel(AddonWindow);
     BetterThanBis:OptionsPanel(AddonWindow);
-    BetterThanBis:PlayerModel(AddonWindow);
     BetterThanBis:MainFrame(AddonWindow);
     BetterThanBis:AddGearsetPopup(AddonWindow);
 end
@@ -163,6 +161,11 @@ function BetterThanBis:OptionsPanel(frame)
 	frame.SidePanel.background:SetAllPoints();
 	frame.SidePanel.background:SetDrawLayer("ARTWORK", 1);
 	frame.SidePanel.background:SetColorTexture(0.2, 0.2, 0.2, 1);
+    if BetterThanBis.db.optionspanel.hide then
+        frame.SidePanel:Hide();
+    else
+        frame.SidePanel:Show();
+    end
 
     -- Options panel Title
     frame.SidePanel.Heading = CreateFrame("Frame", "OptionsPanelHeading", frame.SidePanel);
@@ -202,70 +205,6 @@ function BetterThanBis:OptionsPanel(frame)
     end)
     frame.SidePanel.Options.ShowMinimapIcon:Show();
 
-    frame.SidePanel.Options.ShowPlayerModel = CreateFrame("CheckButton", "ShowPlayerModelCheckButton", frame.SidePanel.Options, "ChatConfigCheckButtonTemplate");
-    frame.SidePanel.Options.ShowPlayerModel:ClearAllPoints();
-    frame.SidePanel.Options.ShowPlayerModel:SetPoint("TOP", frame.SidePanel.Options.ShowMinimapIcon, "BOTTOM", 0, -3);
-    frame.SidePanel.Options.ShowPlayerModel:SetText("Show player model");
-    frame.SidePanel.Options.ShowPlayerModel:SetChecked(not BetterThanBis.db.playermodel.hide);
-    frame.SidePanel.Options.ShowPlayerModel.text = frame.SidePanel.Options.ShowPlayerModel:CreateFontString();
-    frame.SidePanel.Options.ShowPlayerModel.text:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE");
-    frame.SidePanel.Options.ShowPlayerModel.text:SetText("Show player model");
-    frame.SidePanel.Options.ShowPlayerModel.text:ClearAllPoints();
-    frame.SidePanel.Options.ShowPlayerModel.text:SetPoint("LEFT", frame.SidePanel.Options.ShowPlayerModel, "RIGHT", 0, 0);
-    frame.SidePanel.Options.ShowPlayerModel:SetScript("OnClick", function()
-        if BetterThanBis.db.playermodel.hide then
-            frame.PlayerModel:Show()
-            BetterThanBis.db.playermodel.hide = false;
-        else
-            frame.PlayerModel:Hide()
-            BetterThanBis.db.playermodel.hide = true;
-        end
-    end)
-
-    if BetterThanBis.db.optionspanel.hide then
-        frame.SidePanel:Hide();
-    end
-end
-
-function BetterThanBis:PlayerModel(frame)
-    local _, race = UnitRace("player")
-    local _,_,classIndex = UnitClass("player")
-
-    frame.PlayerModel = CreateFrame("Frame", "PlayerCharacterModelFrame", frame);
-    frame.PlayerModel:ClearAllPoints();
-    frame.PlayerModel:SetPoint("RIGHT", frame, "LEFT", 0, 0);
-    frame.PlayerModel:SetSize(250, sizeY);
-    frame.PlayerModel:EnableMouse(true);
-    frame.PlayerModel.background = frame.PlayerModel:CreateTexture(nil, "BACKGROUND");
-    -- Set the correct scaling for the model;
-    frame.PlayerModel.background:SetAtlas("dressingroom-background-"..classIndex);
-
-    -- Create the top background
-    frame.PlayerModel.BGTop = frame.PlayerModel:CreateTexture(nil, "BACKGROUND");
-    frame.PlayerModel.BGTop:SetSize(250, 400)
-    frame.PlayerModel.BGTop:SetPoint("TOPLEFT", frame.PlayerModel, "TOPLEFT", 0, 0);
-    frame.PlayerModel.BGTop:SetTexCoord(0, 0.61, 0, 1.0);
-    frame.PlayerModel.BGTop:SetTexture("Interface\\DressUpFrame\\DressUpBackground-"..race.."1");
-
-    -- Create the bottom background
-    frame.PlayerModel.BGBottom = frame.PlayerModel:CreateTexture(nil, "BACKGROUND");
-    frame.PlayerModel.BGBottom:SetSize(250, 100)
-    frame.PlayerModel.BGBottom:SetPoint("TOPLEFT", frame.PlayerModel.BGTop, "BOTTOMLEFT", 0, 0);
-    frame.PlayerModel.BGBottom:SetTexCoord(0, 0.61, 0, 0.588);
-    frame.PlayerModel.BGBottom:SetTexture("Interface\\DressUpFrame\\DressUpBackground-"..race.."3");
-
-    -- The Player Model
-    frame.PlayerModel.Model = CreateFrame("DressUpModel", "PLayerCharacterModel", frame.PlayerModel, "ModelWithControlsTemplate");
-    frame.PlayerModel.Model:SetAllPoints();
-    frame.PlayerModel.Model:SetUnit("Player");
-    frame.PlayerModel.Model:SetPosition(0,0,0);
-    frame.PlayerModel.Model:TryOn(160679);
-
-    if BetterThanBis.db.playermodel.hide then
-        frame.PlayerModel:Hide();
-    else
-        frame.PlayerModel:Show();
-    end
 end
 
 function BetterThanBis:MainFrame(frame)
@@ -288,12 +227,15 @@ end
 function BetterThanBis:GearsetFrame(frame)
 
     frame.GearFrame = CreateFrame("Frame", "GearSetFrame", frame);
-    frame.GearFrame:SetSize(250, frame:GetHeight());
+    frame.GearFrame:SetSize(350, frame:GetHeight());
     frame.GearFrame:ClearAllPoints();
     frame.GearFrame:SetPoint("LEFT", frame, "LEFT", 0, 0);
     frame.GearFrame:SetBackdrop({bgFile = "Interface/FrameGeneral/UI-Background-Rock", 
                                                       tile = false,});
     frame.GearFrame:SetBackdropColor(1,1,1,1);
+
+    -- Create the playermodel
+    BetterThanBis:PlayerModel(frame.GearFrame)
 
     -- Add the gearset selector dropdown frame
     frame.GearFrame.GearSetDropDownFrame = CreateFrame("Frame", "GearSetDropDownFrame", frame.GearFrame, "UIDropDownMenuTemplate");
@@ -321,18 +263,19 @@ function BetterThanBis:GearsetFrame(frame)
     -- Head Frame
     f.head = CreateFrame("Button", "HeadFrame", f, "ItemButtonTemplate"); --UIPanelLargeSilverButton
     f.head:ClearAllPoints();
-    f.head:SetPoint("TOPLEFT", f, "TOPLEFT", 5, -30);
+    f.head:SetPoint("TOPLEFT", f, "TOPLEFT", 3, -40);
     f.head:SetSize(45, 45);
     f.head.background = f.head:CreateTexture(nil, "BACKGROUND");
     f.head.background:ClearAllPoints();
     f.head.background:SetPoint("CENTER", f.head, "CENTER", 0, 0);
     f.head.background:SetSize(40, 40);
-    f.head.background:SetTexture("Interface\\Icons\\inv_helmet_24");
+    f.head.background:SetTexture("Interface\\Icons\\inv_helmet_22");
     f.head.background:SetDesaturated(1);
     f.head:SetScript("OnClick", function()
         SelectedItemSlot = "INVTYPE_HEAD";
         BetterThanBis:ToggleItemSelectionFrame();
     end);
+    GearIcons.head = f.head;
 
     f.neck = CreateFrame("Button", "NeckFrame", f, "ItemButtonTemplate"); --UIPanelLargeSilverButton
     f.neck:ClearAllPoints();
@@ -344,6 +287,7 @@ function BetterThanBis:GearsetFrame(frame)
     f.neck.background:SetSize(38, 38)
     f.neck.background:SetTexture("Interface\\Icons\\item_icecrownnecklaced");
     f.neck.background:SetDesaturated(1);
+    GearIcons.neck = f.neck;
 
     f.shoulder = CreateFrame("Button", "NeckFrame", f, "ItemButtonTemplate"); --UIPanelLargeSilverButton
     f.shoulder:ClearAllPoints();
@@ -359,6 +303,120 @@ function BetterThanBis:GearsetFrame(frame)
         SelectedItemSlot = "INVTYPE_SHOULDER";
         BetterThanBis:ToggleItemSelectionFrame();
     end)
+    GearIcons.shoulder = f.shoulder;
+
+    f.back = CreateFrame("Button", "BackFrame", f, "ItemButtonTemplate"); --UIPanelLargeSilverButton
+    f.back:ClearAllPoints();
+    f.back:SetPoint("TOP", f.shoulder, "BOTTOM", 0, -4);
+    f.back:SetSize(45, 45);
+    f.back.background = f.back:CreateTexture(nil, "BACKGROUND");
+    f.back.background:ClearAllPoints();
+    f.back.background:SetPoint("CENTER", f.back, "CENTER", 0, 0)
+    f.back.background:SetSize(38, 38)
+    f.back.background:SetTexture("Interface\\Icons\\inv_cloack_22");
+    f.back.background:SetDesaturated(1);
+    f.back:SetScript("OnClick", function()
+    end)
+    GearIcons.back = f.back;
+
+    f.chest = CreateFrame("Button", "ChestFrame", f, "ItemButtonTemplate"); --UIPanelLargeSilverButton
+    f.chest:ClearAllPoints();
+    f.chest:SetPoint("TOP", f.back, "BOTTOM", 0, -4);
+    f.chest:SetSize(45, 45);
+    f.chest.background = f.chest:CreateTexture(nil, "BACKGROUND");
+    f.chest.background:ClearAllPoints();
+    f.chest.background:SetPoint("CENTER", f.chest, "CENTER", 0, 0)
+    f.chest.background:SetSize(38, 38)
+    f.chest.background:SetTexture("Interface\\Icons\\inv_chest_22");
+    f.chest.background:SetDesaturated(1);
+    f.chest:SetScript("OnClick", function()
+    end)
+    GearIcons.chest = f.chest;
+
+    f.shirt = CreateFrame("Button", "ChestFrame", f, "ItemButtonTemplate"); --UIPanelLargeSilverButton
+    f.shirt:ClearAllPoints();
+    f.shirt:SetPoint("TOP", f.chest, "BOTTOM", 0, -4);
+    f.shirt:SetSize(45, 45);
+    f.shirt.background = f.shirt:CreateTexture(nil, "BACKGROUND");
+    f.shirt.background:ClearAllPoints();
+    f.shirt.background:SetPoint("CENTER", f.shirt, "CENTER", 0, 0)
+    f.shirt.background:SetSize(38, 38)
+    f.shirt.background:SetTexture("Interface\\Icons\\inv_chest_22");
+    f.shirt.background:SetDesaturated(1);
+    f.shirt:SetScript("OnClick", function()
+    end)
+    GearIcons.shirt = f.shirt;
+
+    f.tabard = CreateFrame("Button", "ChestFrame", f, "ItemButtonTemplate"); --UIPanelLargeSilverButton
+    f.tabard:ClearAllPoints();
+    f.tabard:SetPoint("TOP", f.shirt, "BOTTOM", 0, -4);
+    f.tabard:SetSize(45, 45);
+    f.tabard.background = f.tabard:CreateTexture(nil, "BACKGROUND");
+    f.tabard.background:ClearAllPoints();
+    f.tabard.background:SetPoint("CENTER", f.tabard, "CENTER", 0, 0)
+    f.tabard.background:SetSize(38, 38)
+    f.tabard.background:SetTexture("Interface\\Icons\\inv_chest_22");
+    f.tabard.background:SetDesaturated(1);
+    f.tabard:SetScript("OnClick", function()
+    end)
+    GearIcons.tabard = f.tabard;
+
+    f.bracers = CreateFrame("Button", "ChestFrame", f, "ItemButtonTemplate"); --UIPanelLargeSilverButton
+    f.bracers:ClearAllPoints();
+    f.bracers:SetPoint("TOP", f.tabard, "BOTTOM", 0, -4);
+    f.bracers:SetSize(45, 45);
+    f.bracers.background = f.bracers:CreateTexture(nil, "BACKGROUND");
+    f.bracers.background:ClearAllPoints();
+    f.bracers.background:SetPoint("CENTER", f.bracers, "CENTER", 0, 0)
+    f.bracers.background:SetSize(38, 38)
+    f.bracers.background:SetTexture("Interface\\Icons\\inv_chest_22");
+    f.bracers.background:SetDesaturated(1);
+    f.bracers:SetScript("OnClick", function()
+    end)
+    GearIcons.bracers = f.bracers;
+    
+
+end
+
+function BetterThanBis:PlayerModel(frame)
+    local _, race = UnitRace("player")
+    local _,_,classIndex = UnitClass("player")
+    local height = frame:GetHeight()-30;
+    local width = 250;
+    local offsetBottom = 30;
+
+    frame.PlayerModel = CreateFrame("Frame", "PlayerCharacterModelFrame", frame);
+    frame.PlayerModel:ClearAllPoints();
+    frame.PlayerModel:SetPoint("BOTTOM", frame, "BOTTOM", 0, offsetBottom);
+    frame.PlayerModel:SetSize(width, height - offsetBottom);
+    frame.PlayerModel:EnableMouse(true);
+    frame.PlayerModel.background = frame.PlayerModel:CreateTexture(nil, "BACKGROUND");
+    -- Set the correct scaling for the model;
+    frame.PlayerModel.background:SetAtlas("dressingroom-background-"..classIndex);
+
+    -- Create the top background
+    frame.PlayerModel.BGTop = frame.PlayerModel:CreateTexture(nil, "BACKGROUND");
+    frame.PlayerModel.BGTop:SetSize(width, (height-offsetBottom)*0.8)
+    frame.PlayerModel.BGTop:SetPoint("TOPLEFT", frame.PlayerModel, "TOPLEFT", 0, 0);
+    frame.PlayerModel.BGTop:SetTexCoord(0, 0.61, 0, 1.0);
+    frame.PlayerModel.BGTop:SetTexture("Interface\\DressUpFrame\\DressUpBackground-"..race.."1");
+    frame.PlayerModel.BGTop:SetDesaturated(1);
+    frame.PlayerModel.BGTop:SetVertexColor(0.4, 0.4, 0.4, 1);
+
+    -- Create the bottom background
+    frame.PlayerModel.BGBottom = frame.PlayerModel:CreateTexture(nil, "BACKGROUND");
+    frame.PlayerModel.BGBottom:SetSize(width, (height-offsetBottom)*0.2)
+    frame.PlayerModel.BGBottom:SetPoint("TOPLEFT", frame.PlayerModel.BGTop, "BOTTOMLEFT", 0, 0);
+    frame.PlayerModel.BGBottom:SetTexCoord(0, 0.61, 0, 0.588);
+    frame.PlayerModel.BGBottom:SetTexture("Interface\\DressUpFrame\\DressUpBackground-"..race.."3");
+    frame.PlayerModel.BGBottom:SetDesaturated(1);
+    frame.PlayerModel.BGBottom:SetVertexColor(0.4, 0.4, 0.4, 1);
+
+    -- The Player Model
+    frame.PlayerModel.Model = CreateFrame("DressUpModel", "PLayerCharacterModel", frame.PlayerModel, "ModelWithControlsTemplate");
+    frame.PlayerModel.Model:SetAllPoints();
+    frame.PlayerModel.Model:SetUnit("Player");
+    frame.PlayerModel.Model:SetPosition(0,0,0);
 end
 
 function BetterThanBis:SetupGearDropdown(dd)
@@ -475,7 +533,7 @@ end
 function BetterThanBis:InfoFrame(frame)
 
     frame.InfoFrame = CreateFrame("Frame", "InfoFrame", frame);
-    frame.InfoFrame:SetSize(550, frame:GetHeight());
+    frame.InfoFrame:SetSize(450, frame:GetHeight());
     frame.InfoFrame:ClearAllPoints();
     frame.InfoFrame:SetPoint("RIGHT", frame, "RIGHT", 0, 0);
 
@@ -561,6 +619,36 @@ function BetterThanBis:OnInitialize()
 
     InitFrames();
     icon:Register("BetterThanBis", LDB, self.db.minimap)
+end
+
+function BetterThanBis:OnEnable()
+
+    if #BetterThanBis.char.gearsets <= 0 then
+        GearIcons.head.background:SetTexture(GetInventoryItemTexture("player", 1));
+        GearIcons.head.background:SetDesaturated(nil);
+
+        GearIcons.neck.background:SetTexture(GetInventoryItemTexture("player", 2));
+        GearIcons.neck.background:SetDesaturated(nil);
+
+        GearIcons.shoulder.background:SetTexture(GetInventoryItemTexture("player", 3));
+        GearIcons.shoulder.background:SetDesaturated(nil);
+
+        GearIcons.back.background:SetTexture(GetInventoryItemTexture("player", 15));
+        GearIcons.back.background:SetDesaturated(nil);
+
+        GearIcons.chest.background:SetTexture(GetInventoryItemTexture("player", 5));
+        GearIcons.chest.background:SetDesaturated(nil);
+
+        GearIcons.shirt.background:SetTexture(GetInventoryItemTexture("player", 4));
+        GearIcons.shirt.background:SetDesaturated(nil);
+
+        GearIcons.tabard.background:SetTexture(GetInventoryItemTexture("player", 19));
+        GearIcons.tabard.background:SetDesaturated(nil);
+
+        GearIcons.bracers.background:SetTexture(GetInventoryItemTexture("player", 9));
+        GearIcons.bracers.background:SetDesaturated(nil);
+    end
+
 end
 
 -- Handles the chat commands
